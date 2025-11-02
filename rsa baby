@@ -1,0 +1,92 @@
+# 🕵️‍♀️ Ringzer0Team — RSA Baby Challenge Write-Up
+
+**By Celestine a.k.a. C0MIC 🔐**
+
+---
+
+## 🎯 Summary
+
+**Challenge:** A ZIP file contained an RSA-encrypted flag and a private key.
+
+**Result:** Successfully decrypted the flag:
+
+```
+FLAG-vOAM5ZcReMNzJqOfxLauakHx
+```
+
+---
+
+## 🧩 The Setup (what I found)
+
+File: `e2c9757d48bd69a357a78223dd4a2bd1.zip`
+
+Attempting to unzip produced this error:
+
+```
+checkdir error:  flag exists but is not directory
+```
+
+Turns out there was already a file named `flag` in the working directory — the archive wanted to create a **directory** called `flag/`.
+
+---
+
+## 🛠️ Fixing the extraction (commands I ran)
+
+I removed the conflicting file and re-extracted the archive:
+
+```bash
+rm flag
+unzip e2c9757d48bd69a357a78223dd4a2bd1.zip
+ls flag
+# -> flag.enc  private.pem
+```
+
+Inside `flag/`:
+
+* `private.pem` → RSA private key (PEM)
+* `flag.enc` → encrypted flag
+
+---
+
+## 🔐 Decryption
+
+This is a standard RSA decryption with the provided private key. I used OpenSSL to perform the decryption.
+
+**Command used:**
+
+```bash
+openssl rsautl -decrypt -inkey flag/private.pem -in flag/flag.enc
+```
+
+If OpenSSL complains (e.g. `RSA operation error`), the alternative is:
+
+```bash
+openssl pkeyutl -decrypt -inkey flag/private.pem -in flag/flag.enc
+```
+
+One of these commands returned the plaintext flag printed to the terminal.
+
+---
+
+## 🏁 The Flag
+
+```text
+FLAG-vOAM5ZcReMNzJqOfxLauakHx
+```
+
+---
+
+## 🧠 Lessons & Notes (for future you)
+
+* Always check for filename conflicts before extracting archives.
+* A `.pem` file usually indicates an RSA key — look for `BEGIN RSA PRIVATE KEY`.
+* `openssl rsautl` is handy for simple RSA ops; `openssl pkeyutl` supports additional formats/padding.
+* Keep private keys safe. If someone shares a private key in a challenge, you can decrypt the data directly — but in real life, *never* expose private keys.
+
+---
+
+## ✨ Final thoughts
+
+This was a great beginner-friendly RSA challenge: short, instructive, and satisfying to finish. If you want, I can convert this into a nicely formatted `README.md` file, add badges, or create a short screencast showing the commands.
+
+Would you like the `README.md` file exported to download or pushed to your GitHub repo? 🚀
